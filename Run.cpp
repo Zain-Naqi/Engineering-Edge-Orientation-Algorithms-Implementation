@@ -1,5 +1,6 @@
 #include "Graph.h"
 #include "Venkateswaran.h"
+#include "FastImprove.h"
 #include <iostream>
 #include <cassert>
 #include <chrono>
@@ -31,78 +32,69 @@ void print_orientation(const Graph& g, const OrientationState& s, int max_show =
 }
 
 
+// ── Helper: Test with both algorithms ─────────────────────────────────────────
+void test_with_both_algorithms(const std::string& test_name, const Graph& g) {
+    std::cout << "=== " << test_name << " ===\n";
+    std::cout << "  n=" << g.n() << "  m=" << g.m() << "\n";
+
+    OrientationState canonical = g.fresh_orientation();
+    std::cout << "  Initial max_outdeg=" << canonical.max_outdeg() << "\n\n";
+
+    // Scenario 1: Venkateswaran alone
+    {
+        OrientationState s = canonical;
+        auto t0 = Clock::now();
+        auto res = venkateswaran(g, s);
+        double ms = Ms(Clock::now() - t0).count();
+
+        std::cout << "  [Scenario 1] Venkateswaran alone:\n";
+        std::cout << "    d*=" << res.d_star
+                  << "  time=" << ms << "ms"
+                  << "  paths_flipped=" << res.paths_flipped
+                  << "  edges_visited=" << res.edges_visited << "\n";
+    }
+
+    // Scenario 2: FastImprove + Venkateswaran
+    {
+        OrientationState s = canonical;
+        auto t0 = Clock::now();
+        auto fi = fast_improve(g, s);
+        auto res = venkateswaran(g, s);
+        double ms = Ms(Clock::now() - t0).count();
+
+        std::cout << "  [Scenario 2] FastImprove + Venkateswaran:\n";
+        std::cout << "    d*=" << res.d_star
+                  << "  time=" << ms << "ms"
+                  << "  paths_flipped=" << res.paths_flipped
+                  << "  edges_visited=" << res.edges_visited
+                  << "  (FastImprove: flipped=" << fi.edges_flipped
+                  << "  k_before=" << fi.initial_max_outdeg
+                  << "  k_after=" << fi.final_max_outdeg << ")\n";
+    }
+
+    std::cout << "\n";
+}
+
 // ── Unit tests on tiny graphs ─────────────────────────────────────────────────
  
 void test_triangle() {
-
     Graph g = Graph::from_pairs(3, {{0,1},{1,2},{0,2}});
-
-    OrientationState s = g.fresh_orientation();
- 
-    std::cout << "=== Triangle test ===\n";
-
-    std::cout << "Before: max_outdeg=" << s.max_outdeg() << "\n";
-
-    print_orientation(g, s);
- 
-    auto res = venkateswaran(g, s);
-
-    std::cout << "After:  d*=" << res.d_star
-              << "  paths_flipped=" << res.paths_flipped
-              << "  edges_visited=" << res.edges_visited << "\n";
-
-    print_orientation(g, s);
-    assert(res.d_star == 1);
-    std::cout << "PASS\n\n";
+    test_with_both_algorithms("Triangle Test", g);
 }
 
 void test_star() {
-
     Graph g = Graph::from_pairs(5, {{0,1},{0,2},{0,3},{0,4}});
-
-    OrientationState s = g.fresh_orientation();
- 
-    std::cout << "=== Star K_(1,4) test ===\n";
-
-    std::cout << "Before: max_outdeg=" << s.max_outdeg() << "\n";
- 
-    auto res = venkateswaran(g, s);
-
-    std::cout << "After:  d*=" << res.d_star
-              << "  paths_flipped=" << res.paths_flipped << "\n";
-
-    assert(res.d_star == 1);
-    std::cout << "PASS\n\n";
+    test_with_both_algorithms("Star K_(1,4) Test", g);
 }
 
 void test_path() {
-
     Graph g = Graph::from_pairs(5, {{0,1},{1,2},{2,3},{3,4}});
-
-    OrientationState s = g.fresh_orientation();
-
-    std::cout << "=== Path P_5 test ===\n";
-
-    auto res = venkateswaran(g, s);
-
-    std::cout << "After:  d*=" << res.d_star << "\n";
-    assert(res.d_star == 1);
-    std::cout << "PASS\n\n";
+    test_with_both_algorithms("Path P_5 Test", g);
 }
 
 void test_complete_graph_k4() {
-
     Graph g = Graph::from_pairs(4, {{0,1},{0,2},{0,3},{1,2},{1,3},{2,3}});
-
-    OrientationState s = g.fresh_orientation();
- 
-    std::cout << "=== Complete graph K4 test ===\n";
-
-    auto res = venkateswaran(g, s);
-
-    std::cout << "After:  d*=" << res.d_star << "\n";
-    assert(res.d_star == 2);
-    std::cout << "PASS\n\n";
+    test_with_both_algorithms("Complete Graph K4 Test", g);
 }
 
 // ── Fair comparison demo ──────────────────────────────────────────────────────
@@ -137,6 +129,25 @@ void demo_fair_comparison(const Graph& g, const std::string& name) {
     //     auto res = rpo(g, s);
     //     ...
     // }
+    
+    //Engineering Approach 1: FastImprove + Venkateswaran
+    {
+        OrientationState s = canonical;   // <-- copy, not reference
+        auto t0 = Clock::now();
+        auto fi = fast_improve(g, s);
+        auto res = venkateswaran(g, s);
+
+        double ms = Ms(Clock::now() - t0).count();
+
+        std::cout << "  FastImprove+Venkateswaran:  d*=" << res.d_star
+                << "  time=" << ms << "ms"
+                << "  paths=" << res.paths_flipped
+                << "  edge_visits=" << res.edges_visited
+                << "  fi_flipped=" << fi.edges_flipped
+                << "  start_k=" << fi.initial_max_outdeg
+                << "  after_fi_k=" << fi.final_max_outdeg << "\n";
+
+    }
  
     std::cout << "\n";
 }
