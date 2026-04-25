@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 
 using namespace std;
 
@@ -104,6 +105,7 @@ inline VenkatResult venkateswaran(const Graph& g, OrientationState& s) {
         if (s.outdeg[v] <= k - 2)   T.insert(v);
     }
 
+
     while (true) {
         if (S.empty()) {
             // All vertices have out-degree <= k - 1 → reduce target
@@ -129,6 +131,8 @@ inline VenkatResult venkateswaran(const Graph& g, OrientationState& s) {
 
         // No improving path exists → current k is optimal
         if (path.empty()) break;
+
+        std::cout << path[0] << " " << "..." << path[-1] << std::endl;
 
         // ── Flip the path ────────────────────────────────────────────────
         // Before flipping, note which endpoint is the source (in S) and

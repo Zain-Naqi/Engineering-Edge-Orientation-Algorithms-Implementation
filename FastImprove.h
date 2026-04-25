@@ -1,4 +1,6 @@
 #pragma once
+#include <stdio.h>
+#include <iostream>
 #include "Graph.h"
 
 struct FastImproveResult {

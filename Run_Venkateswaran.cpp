@@ -110,17 +110,17 @@ void demo_fair_comparison(const Graph& g, const std::string& name) {
     OrientationState canonical = g.fresh_orientation();
  
     // ── Algorithm 1: Venkateswaran ────────────────────────────────────────
-    {
-        OrientationState s = canonical;   // <-- copy, not reference
-        auto t0 = Clock::now();
-        auto res = venkateswaran(g, s);
-        double ms = Ms(Clock::now() - t0).count();
+    // {
+    //     OrientationState s = canonical;   // <-- copy, not reference
+    //     auto t0 = Clock::now();
+    //     auto res = venkateswaran(g, s);
+    //     double ms = Ms(Clock::now() - t0).count();
  
-        std::cout << "  Venkateswaran:  d*=" << res.d_star
-                  << "  time=" << ms << "ms"
-                  << "  paths=" << res.paths_flipped
-                  << "  edge_visits=" << res.edges_visited << "\n";
-    }
+    //     std::cout << "  Venkateswaran:  d*=" << res.d_star
+    //               << "  time=" << ms << "ms"
+    //               << "  paths=" << res.paths_flipped
+    //               << "  edge_visits=" << res.edges_visited << "\n";
+    // }
  
     // When we implement FastImprove+DFS and RPO, add them here:
     // {

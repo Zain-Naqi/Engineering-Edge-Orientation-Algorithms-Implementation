@@ -4,7 +4,7 @@ CXXFLAGS = -std=c++20 -O2 -Wall -Wextra
 # Use -O3 and -DNDEBUG for benchmarks (disables assert)
 BENCH_FLAGS = -std=c++20 -O3 -DNDEBUG -Wall
 
-SRC = Graph.cpp Run.cpp
+SRC = Graph.cpp Run_OptimizedDFS.cpp
 OUT = run
 
 all:
