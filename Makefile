@@ -1,17 +1,28 @@
-CXX      = g++
-CXXFLAGS = -std=c++20 -O2 -Wall -Wextra
+CXX       = g++
+CXXFLAGS  = -std=c++20 -O2 -Wall -Wextra
+BENCHFLAGS= -std=c++20 -O3 -DNDEBUG -Wall
 
-# Use -O3 and -DNDEBUG for benchmarks (disables assert)
-BENCH_FLAGS = -std=c++20 -O3 -DNDEBUG -Wall
+# Source files shared by all targets
+SHARED_SRC = Graph.cpp
 
-SRC = Graph.cpp Run_OptimizedDFS.cpp
-OUT = run
+# ── Primary target: RPO test runner (debug build) ─────────────────────────────
+run: $(SHARED_SRC) Run_RPO.cpp
+	$(CXX) $(CXXFLAGS) $(SHARED_SRC) Run_RPO.cpp -o run
 
-all:
-	$(CXX) $(CXXFLAGS) $(SRC) -o $(OUT)
+# ── Benchmark build (asserts off, full optimisation) ─────────────────────────
+bench: $(SHARED_SRC) Run_RPO.cpp
+	$(CXX) $(BENCHFLAGS) $(SHARED_SRC) Run_RPO.cpp -o run_bench
 
-bench:
-	$(CXX) $(BENCH_FLAGS) $(SRC) -o $(OUT)_bench
+# ── Legacy runners (kept for reference) ──────────────────────────────────────
+run_venkat: $(SHARED_SRC) Run_Venkateswaran.cpp
+	$(CXX) $(CXXFLAGS) $(SHARED_SRC) Run_Venkateswaran.cpp -o run_venkat
 
+run_dfs: $(SHARED_SRC) Run_OptimizedDFS.cpp
+	$(CXX) $(CXXFLAGS) $(SHARED_SRC) Run_OptimizedDFS.cpp -o run_dfs
+
+# ── Clean ─────────────────────────────────────────────────────────────────────
 clean:
-	rm -f $(OUT) $(OUT)_bench
+	rm -f run run_bench run_venkat run_dfs
+
+.PHONY: all run bench run_venkat run_dfs clean
+all: run
